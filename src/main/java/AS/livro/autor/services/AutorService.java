@@ -4,9 +4,10 @@ import AS.livro.autor.dto.autores.AutorLivroDTO;
 import AS.livro.autor.dto.autores.AutorResponseDTO;
 import AS.livro.autor.entities.Autor;
 import AS.livro.autor.repositories.AutorRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class AutorService {
@@ -16,21 +17,26 @@ public class AutorService {
         this.autorRepository = autorRepository;
     }
 
-    public Page<AutorResponseDTO> getAutores(Pageable pageable) {
-        return autorRepository.findAll(pageable)
-                .map(autor -> new AutorResponseDTO(
-                        autor.getNome(),
-                        autor.getEmail(),
-                        autor.getBiografia(),
-                        autor.getLivros().stream()
-                                .map(livro -> new AutorLivroDTO(
-                                        livro.getId(),
-                                        livro.getTitulo(),
-                                        livro.getDescricao()
-                                ))
-                                .toList()
-                ));
+    public List<AutorResponseDTO> getAutores() {
+        List<Autor> autores = autorRepository.findAll();
+
+        return autores.stream().map(autor -> new AutorResponseDTO(
+                autor.getId(),
+                autor.getNome(),
+                autor.getEmail(),
+                autor.getBiografia(),
+                autor.getLivros().stream()
+                        .map(livro -> new AutorLivroDTO(
+                                livro.getId(),
+                                livro.getTitulo(),
+                                livro.getDescricao()
+                        ))
+                        .collect(Collectors.toList())
+        )).collect(Collectors.toList());
     }
+
+    // Mantém os outros métodos, mas adaptando os retornos para entidades quando necessário.
+    // ...
 
     public Autor getAutor(Long id) {
         return autorRepository.findById(id).orElseThrow();

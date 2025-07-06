@@ -2,7 +2,6 @@ package AS.livro.autor.controllers;
 
 import AS.livro.autor.dto.livros.request.LivroRequest;
 import AS.livro.autor.dto.livros.response.LivroResponseDTO;
-import AS.livro.autor.entities.Livro;
 import AS.livro.autor.services.LivroService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/livros")
 public class LivroController {
+
     private final LivroService livroService;
 
     public LivroController(LivroService livroService) {
@@ -21,35 +21,34 @@ public class LivroController {
     }
 
     @GetMapping
-    public List<LivroResponseDTO> getAllLivros() {
-        return this.livroService.getAllLivros();
+    public ResponseEntity<List<LivroResponseDTO>> getLivros() {
+        List<LivroResponseDTO> livros = livroService.getLivros();
+        return ResponseEntity.ok(livros);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<LivroResponseDTO> getLivroById(@PathVariable Long id) {
-        Livro livro = livroService.getLivro(id);
-        LivroResponseDTO dto = new LivroResponseDTO(
-                livro.getTitulo(),
-                livro.getDescricao(),
-                livro.getAutor().getNome()
-        );
-        return ResponseEntity.ok(dto);
+    public ResponseEntity<LivroResponseDTO> getLivro(@PathVariable Long id) {
+        LivroResponseDTO livro = livroService.getLivro(id);
+        return ResponseEntity.ok(livro);
     }
 
     @PostMapping
-    public ResponseEntity<Livro> createLivro(@RequestBody LivroRequest livroRequest) {
-        Livro livro = this.livroService.createLivro(livroRequest);
+    public ResponseEntity<LivroResponseDTO> createLivro(@RequestBody LivroRequest livroRequest) {
+        LivroResponseDTO createdLivro = livroService.createLivro(livroRequest);
 
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-                .buildAndExpand(livro.getId()).toUri();
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(createdLivro.getId())  // Passa o id aqui
+                .toUri();
 
-        return ResponseEntity.created(uri).body(livro);
+        return ResponseEntity.created(uri).body(createdLivro);
     }
 
+
     @PutMapping("/{id}")
-    public ResponseEntity<Livro> updateLivro(@PathVariable Long id, @RequestBody LivroRequest livroRequest) {
-        Livro livro = livroService.updateLivro(id, livroRequest);
-        return ResponseEntity.ok(livro);
+    public ResponseEntity<LivroResponseDTO> updateLivro(@PathVariable Long id, @RequestBody LivroRequest livroRequest) {
+        LivroResponseDTO updatedLivro = livroService.updateLivro(id, livroRequest);
+        return ResponseEntity.ok(updatedLivro);
     }
 
     @DeleteMapping("/{id}")

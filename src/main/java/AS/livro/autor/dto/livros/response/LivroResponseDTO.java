@@ -1,16 +1,26 @@
 package AS.livro.autor.dto.livros.response;
 
 public class LivroResponseDTO {
+    private Long id;
     private String titulo;
     private String descricao;
     private String autorNome;
 
     public LivroResponseDTO() {}
 
-    public LivroResponseDTO(String titulo, String descricao, String autorNome) {
+    public LivroResponseDTO(Long id, String titulo, String descricao, String autorNome) {
+        this.id = id;
         this.titulo = titulo;
         this.descricao = descricao;
         this.autorNome = autorNome;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getTitulo() {
@@ -37,3 +47,4 @@ public class LivroResponseDTO {
         this.autorNome = autorNome;
     }
 }
+

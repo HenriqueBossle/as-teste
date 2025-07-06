@@ -2,16 +2,18 @@ package AS.livro.autor.services;
 
 import AS.livro.autor.dto.livros.request.LivroRequest;
 import AS.livro.autor.dto.livros.response.LivroResponseDTO;
-import AS.livro.autor.entities.Livro;
 import AS.livro.autor.entities.Autor;
-import AS.livro.autor.repositories.LivroRepository;
+import AS.livro.autor.entities.Livro;
 import AS.livro.autor.repositories.AutorRepository;
+import AS.livro.autor.repositories.LivroRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class LivroService {
+
     private final LivroRepository livroRepository;
     private final AutorRepository autorRepository;
 
@@ -20,40 +22,65 @@ public class LivroService {
         this.autorRepository = autorRepository;
     }
 
-    public List<LivroResponseDTO> getAllLivros() {
-        return this.livroRepository.findAll()
-                .stream()
-                .map(item -> new LivroResponseDTO(
-                        item.getTitulo(),
-                        item.getDescricao(),
-                        item.getAutor().getNome() // apenas o nome
-                )).toList();
+    public List<LivroResponseDTO> getLivros() {
+        List<Livro> livros = livroRepository.findAll();
+
+        return livros.stream().map(livro -> new LivroResponseDTO(
+                livro.getId(),
+                livro.getTitulo(),
+                livro.getDescricao(),
+                livro.getAutor().getNome()
+        )).collect(Collectors.toList());
     }
 
-    public Livro getLivro(Long id) {
-        return livroRepository.findById(id).orElseThrow();
+    public LivroResponseDTO getLivro(Long id) {
+        Livro livro = livroRepository.findById(id).orElseThrow();
+
+        return new LivroResponseDTO(
+                livro.getId(),
+                livro.getTitulo(),
+                livro.getDescricao(),
+                livro.getAutor().getNome()
+        );
     }
 
-    public Livro createLivro(LivroRequest livroRequest) {
-        Autor autor = autorRepository.findById(livroRequest.getAutorId()).orElseThrow();
+    public LivroResponseDTO createLivro(LivroRequest livroRequest) {
+        Autor autor = autorRepository.findById(livroRequest.getAutorId())
+                .orElseThrow(() -> new RuntimeException("Autor não encontrado"));
 
         Livro livro = new Livro();
         livro.setTitulo(livroRequest.getTitulo());
         livro.setDescricao(livroRequest.getDescricao());
         livro.setAutor(autor);
 
-        return livroRepository.save(livro);
+        Livro savedLivro = livroRepository.save(livro);
+
+        return new LivroResponseDTO(
+                savedLivro.getId(),
+                savedLivro.getTitulo(),
+                savedLivro.getDescricao(),
+                savedLivro.getAutor().getNome()
+        );
     }
 
-    public Livro updateLivro(Long id, LivroRequest livroRequest) {
+    public LivroResponseDTO updateLivro(Long id, LivroRequest livroRequest) {
         Livro livro = livroRepository.findById(id).orElseThrow();
-        Autor autor = autorRepository.findById(livroRequest.getAutorId()).orElseThrow();
+
+        Autor autor = autorRepository.findById(livroRequest.getAutorId())
+                .orElseThrow(() -> new RuntimeException("Autor não encontrado"));
 
         livro.setTitulo(livroRequest.getTitulo());
         livro.setDescricao(livroRequest.getDescricao());
         livro.setAutor(autor);
 
-        return livroRepository.save(livro);
+        Livro updatedLivro = livroRepository.save(livro);
+
+        return new LivroResponseDTO(
+                updatedLivro.getId(),
+                updatedLivro.getTitulo(),
+                updatedLivro.getDescricao(),
+                updatedLivro.getAutor().getNome()
+        );
     }
 
     public void deleteLivro(Long id) {
